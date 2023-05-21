@@ -1,8 +1,7 @@
-# Binary builds
-Builds/
-
-# Automatically generated code
-JuceLibraryCode/
-
-# MacOS garbage
 .DS_Store
+build/
+out/
+CMakeFiles/
+.direnv/
+.cache/
+compile_commands.json

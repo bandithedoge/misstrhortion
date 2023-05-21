@@ -1,0 +1,10 @@
+target_sources(${PROJECT_NAME}
+  PRIVATE
+    PluginEditor.cpp
+    PluginEditor.h
+    PluginLookAndFeel.cpp
+    PluginLookAndFeel.h
+    PluginProcessor.cpp
+    PluginProcessor.h
+    Utils.h
+)
