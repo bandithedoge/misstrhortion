@@ -1,10 +1,13 @@
-target_sources(${PROJECT_NAME}
-  PRIVATE
-    PluginEditor.cpp
-    PluginEditor.h
-    PluginLookAndFeel.cpp
-    PluginLookAndFeel.h
-    PluginProcessor.cpp
-    PluginProcessor.h
-    Utils.h
-)
+dpf_add_plugin(${PROJECT_NAME}
+  TARGETS
+    clap
+    jack
+    ladspa
+    lv2
+    vst2
+    vst3
+  FILES_DSP
+    PluginProcessor.cpp)
+
+target_include_directories(${PROJECT_NAME}
+  PUBLIC ".")

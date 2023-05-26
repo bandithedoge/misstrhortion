@@ -1,345 +1,264 @@
-/*
-	==============================================================================
-
-		This file was auto-generated!
-
-		It contains the basic framework code for a JUCE plugin processor.
-
-	==============================================================================
-*/
-
-#include "PluginProcessor.h"
-#include "PluginEditor.h"
-
+#include "DistrhoPlugin.hpp"
+#include "DistrhoPluginInfo.h"
 #include "Utils.h"
 
+#define JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED
+#include "juce_dsp/juce_dsp.h"
 
-//==============================================================================
-MisstortionAudioProcessor::MisstortionAudioProcessor()
-#ifndef JucePlugin_PreferredChannelConfigurations
-	: AudioProcessor(BusesProperties()
-#if ! JucePlugin_IsMidiEffect
-#if ! JucePlugin_IsSynth
-		.withInput("Input", AudioChannelSet::stereo(), true)
-#endif
-		.withOutput("Output", AudioChannelSet::stereo(), true)
-#endif
-	)
-#endif
-{
-	addParameter(m_paramMix = new AudioParameterFloat("mix", "Mix", NormalisableRange<float>(0.0f, 100.0f), 50.0f));
-	addParameter(m_paramGainIn = new AudioParameterFloat("gainin", "Gain in", NormalisableRange<float>(-50.0f, 50.0f, 0.0f, 0.5f, true), 0.0f));
-	addParameter(m_paramGainOut = new AudioParameterFloat("gainout", "Gain out", NormalisableRange<float>(-50.0f, 50.0f, 0.0f, 0.5f, true), 0.0f));
+typedef juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>,
+                                       juce::dsp::IIR::Coefficients<float>>
+    FilterType;
 
-	addParameter(m_paramDriveHard = new AudioParameterFloat("drive", "Drive", NormalisableRange<float>(0.0f, 50.0f, 0.0f, 0.5f), 0.0f));
-	addParameter(m_paramDriveSoft = new AudioParameterFloat("drive2", "Drive 2", NormalisableRange<float>(0.0f, 50.0f, 0.0f, 0.5f), 0.0f));
-	addParameter(m_paramToneHP = new AudioParameterInt("tone", "Tone", 0, 20000, 20));
-	addParameter(m_paramToneLP = new AudioParameterInt("tonepost", "Tone Post", 1, 20000, 20000));
-	addParameter(m_paramSymmetry = new AudioParameterFloat("symmetry", "Symmetry", NormalisableRange<float>(0.0f, 100.0f), 50.0f));
-	addParameter(m_paramFilterMode = new AudioParameterInt("filtermode", "Filter Mode", 0, 2, 0));
-}
+START_NAMESPACE_DISTRHO
 
-MisstortionAudioProcessor::~MisstortionAudioProcessor()
-{
-}
+class Misstortion : public Plugin {
+  public:
+    Misstortion() : Plugin(m_params, 0, 0){};
 
-//==============================================================================
-const String MisstortionAudioProcessor::getName() const
-{
-	return JucePlugin_Name;
-}
+  protected:
+    const char *getLabel() const override { return DISTRHO_PLUGIN_NAME; }
+    const char *getDescription() const override {
+        return "Old version of the Misstortion plugin. Does its best to be "
+               "like Logic's Clip Distortion, which makes it very useful for "
+               "the hardstyle genre.";
+    }
+    const char *getMaker() const override { return DISTRHO_PLUGIN_BRAND; }
+    const char *getHomePage() const override { return DISTRHO_PLUGIN_URI; }
+    const char *getLicense() const override { return "GPLv3"; }
+    uint32_t getVersion() const override { return d_version(1, 3, 0); }
+    int64_t getUniqueId() const override { return d_cconst('M', 's', 's', 't'); }
 
-bool MisstortionAudioProcessor::acceptsMidi() const
-{
-#if JucePlugin_WantsMidiInput
-	return true;
-#else
-	return false;
-#endif
-}
+    void initAudioPort(bool input, uint32_t index, AudioPort &port) override {
+        port.groupId = kPortGroupStereo;
+        Plugin::initAudioPort(input, index, port);
+    };
 
-bool MisstortionAudioProcessor::producesMidi() const
-{
-#if JucePlugin_ProducesMidiOutput
-	return true;
-#else
-	return false;
-#endif
-}
+    void initParameter(uint32_t index, Parameter &parameter) override {
+        parameter.hints = kParameterIsAutomatable;
+        parameter.ranges.min = 0.0f;
+        parameter.ranges.def = 0.0f;
 
-bool MisstortionAudioProcessor::isMidiEffect() const
-{
-#if JucePlugin_IsMidiEffect
-	return true;
-#else
-	return false;
-#endif
-}
+        switch (index) {
+        case m_paramMix:
+            parameter.name = "Mix";
+            parameter.symbol = "mix";
+            parameter.ranges.max = 100.0f;
+            parameter.ranges.def = 50.0f;
+            parameter.unit = "%";
+            break;
+        case m_paramGainIn:
+            parameter.name = "Gain in";
+            parameter.symbol = "gainin";
+            parameter.ranges.min = -50.0f;
+            parameter.ranges.max = 50.0f;
+            parameter.unit = "db";
+            break;
+        case m_paramGainOut:
+            parameter.name = "Gain out";
+            parameter.symbol = "gainout";
+            parameter.ranges.min = -50.0f;
+            parameter.ranges.max = 50.0f;
+            parameter.unit = "db";
+            break;
+        case m_paramDriveHard:
+            parameter.name = "Drive";
+            parameter.symbol = "drive";
+            parameter.ranges.max = 50.0f;
+            parameter.unit = "db";
+            break;
+        case m_paramDriveSoft:
+            parameter.name = "Drive 2";
+            parameter.symbol = "drive2";
+            parameter.ranges.max = 50.0f;
+            parameter.unit = "db";
+            break;
+        case m_paramToneHP:
+            parameter.hints |= kParameterIsInteger | kParameterIsLogarithmic;
+            parameter.name = "Tone";
+            parameter.symbol = "tone";
+            parameter.ranges.min = 1;
+            parameter.ranges.max = 20000;
+            parameter.ranges.def = 20000;
+            parameter.unit = "Hz";
+            break;
+        case m_paramToneLP:
+            parameter.hints |= kParameterIsInteger | kParameterIsLogarithmic;
+            parameter.name = "Tone Post";
+            parameter.symbol = "tonepost";
+            parameter.ranges.min = 1;
+            parameter.ranges.max = 20000;
+            parameter.ranges.def = 20000;
+            parameter.unit = "Hz";
+            break;
+        case m_paramSymmetry:
+            parameter.name = "Symmetry";
+            parameter.symbol = "symmetry";
+            parameter.ranges.def = 50.0f;
+            parameter.unit = "%";
+            break;
+        case m_paramFilterMode:
+            parameter.hints |= kParameterIsInteger;
+            parameter.name = "Filter Mode";
+            parameter.symbol = "filtermode";
+            parameter.ranges.min = 0;
+            parameter.ranges.max = 2;
+            parameter.ranges.def = 0;
+            break;
+        }
+    };
 
-double MisstortionAudioProcessor::getTailLengthSeconds() const
-{
-	return 0.0;
-}
+    float getParameterValue(uint32_t index) const override { return params[index]; }
 
-int MisstortionAudioProcessor::getNumPrograms()
-{
-	return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-							// so this should be at least 1, even if you're not really implementing programs.
-}
+    void setParameterValue(uint32_t index, float value) override { params[index] = value; };
 
-int MisstortionAudioProcessor::getCurrentProgram()
-{
-	return 0;
-}
+    void sampleRateChanged(double newSampleRate) override {
+        juce::dsp::ProcessSpec dspSpec;
+        dspSpec.sampleRate = newSampleRate;
+        dspSpec.maximumBlockSize = getBufferSize();
+        dspSpec.numChannels = DISTRHO_PLUGIN_NUM_OUTPUTS;
 
-void MisstortionAudioProcessor::setCurrentProgram(int index)
-{
-}
+        m_filterHP.prepare(dspSpec);
+        m_filterLP.prepare(dspSpec);
+    }
 
-const String MisstortionAudioProcessor::getProgramName(int index)
-{
-	return {};
-}
+    void run(const float **inputs, float **outputs, uint32_t frames) override {
+        using namespace juce;
+        auto buffer = AudioBuffer<float>((float **)inputs, DISTRHO_PLUGIN_NUM_INPUTS, frames);
 
-void MisstortionAudioProcessor::changeProgramName(int index, const String& newName)
-{
-}
+        ScopedNoDenormals noDenormals;
 
-//==============================================================================
-void MisstortionAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
-{
-	dsp::ProcessSpec dspSpec;
-	dspSpec.sampleRate = sampleRate;
-	dspSpec.maximumBlockSize = samplesPerBlock;
-	dspSpec.numChannels = getTotalNumOutputChannels();
+        for (int i = DISTRHO_PLUGIN_NUM_INPUTS; i < DISTRHO_PLUGIN_NUM_OUTPUTS; i++) {
+            buffer.clear(i, 0, buffer.getNumSamples());
+        }
 
-	m_filterHP.prepare(dspSpec);
-	m_filterLP.prepare(dspSpec);
-}
+        double sampleRate = getSampleRate();
+        int numSamples = buffer.getNumSamples();
 
-void MisstortionAudioProcessor::releaseResources()
-{
-	// When playback stops, you can use this as an opportunity to free up any
-	// spare memory, etc.
-}
+        float mix = (params[m_paramMix] / 100.0f);
+        float gainIn = Decibels::decibelsToGain(params[m_paramGainIn], -50.0f);
+        float gainOut = Decibels::decibelsToGain(params[m_paramGainOut], -50.0f);
 
-#ifndef JucePlugin_PreferredChannelConfigurations
-bool MisstortionAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
-{
-#if JucePlugin_IsMidiEffect
-	ignoreUnused(layouts);
-	return true;
-#else
-	// This is the place where you check if the layout is supported.
-	// In this template code we only support mono or stereo.
-	if (layouts.getMainOutputChannelSet() != AudioChannelSet::mono()
-		&& layouts.getMainOutputChannelSet() != AudioChannelSet::stereo())
-		return false;
+        float driveHard = Decibels::decibelsToGain(params[m_paramDriveHard]);
+        float driveSoftDb = params[m_paramDriveSoft];
+        float driveSoft = Decibels::decibelsToGain(driveSoftDb);
+        int toneHP = params[m_paramToneHP];
+        int toneLP = params[m_paramToneLP];
+        float symmetry = (params[m_paramSymmetry] / 100.0f);
 
-	// This checks if the input layout matches the output layout
-#if ! JucePlugin_IsSynth
-	if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
-		return false;
-#endif
+        int filterMode = params[m_paramFilterMode];
+        if (filterMode == 0) {
+            // Legacy (1.2 stock, very steep)
+            double qo = pow(2.0, 6.0);
+            double q = sqrt(qo) / (qo - 1);
 
-	return true;
-#endif
-}
-#endif
+            if (toneHP > 0) {
+                m_filtersHPLegacy[0].setCoefficients(
+                    IIRCoefficients::makeHighPass(sampleRate, (double)toneHP, q));
+                m_filtersHPLegacy[1].setCoefficients(
+                    IIRCoefficients::makeHighPass(sampleRate, (double)toneHP, q));
+            }
 
-void MisstortionAudioProcessor::processBlock(AudioSampleBuffer& buffer, MidiBuffer& midiMessages)
-{
-	ScopedNoDenormals noDenormals;
-	const int totalNumInputChannels = getTotalNumInputChannels();
-	const int totalNumOutputChannels = getTotalNumOutputChannels();
+            m_filtersLPLegacy[0].setCoefficients(
+                IIRCoefficients::makeLowPass(sampleRate, (double)toneLP, q));
+            m_filtersLPLegacy[1].setCoefficients(
+                IIRCoefficients::makeLowPass(sampleRate, (double)toneLP, q));
+        }
 
-	for (int i = totalNumInputChannels; i < totalNumOutputChannels; i++) {
-		buffer.clear(i, 0, buffer.getNumSamples());
-	}
+        // Make a temporary buffer for the final mix
+        AudioSampleBuffer processBuffer;
+        processBuffer.makeCopyOf(buffer);
 
-	double sampleRate = getSampleRate();
-	int numSamples = buffer.getNumSamples();
+        dsp::AudioBlock<float> dspBlock(processBuffer);
+        dsp::ProcessContextReplacing<float> dspContext(dspBlock);
 
-	float mix = (*m_paramMix / 100.0f);
-	float gainIn = Decibels::decibelsToGain((float)*m_paramGainIn, -50.0f);
-	float gainOut = Decibels::decibelsToGain((float)*m_paramGainOut, -50.0f);
+        // Apply input gain
+        processBuffer.applyGain(gainIn);
 
-	float driveHard = Decibels::decibelsToGain((float)*m_paramDriveHard);
-	float driveSoftDb = (float)*m_paramDriveSoft;
-	float driveSoft = Decibels::decibelsToGain(driveSoftDb);
-	int toneHP = *m_paramToneHP;
-	int toneLP = *m_paramToneLP;
-	float symmetry = (*m_paramSymmetry / 100.0f);
+        // Apply tone filter (6db/oct or 12db/oct high pass filter)
+        if (filterMode != 0 && toneHP > 0) {
+            // filterMode as order means 1st order = 6db/oct, 2nd order = 12db/oct
+            auto coeff = dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(
+                (float)toneHP, sampleRate, filterMode);
+            m_filterHP.state->coefficients = coeff[0]->coefficients;
+            m_filterHP.process(dspContext);
+        }
 
-	int filterMode = *m_paramFilterMode;
-	if (filterMode == 0) {
-		// Legacy (1.2 stock, very steep)
-		double qo = pow(2.0, 6.0);
-		double q = sqrt(qo) / (qo - 1);
+        // TODO: Turn this into a DSP processor?
+        for (int channel = 0; channel < Min(2, DISTRHO_PLUGIN_NUM_INPUTS); ++channel) {
+            float *channelData = processBuffer.getWritePointer(channel);
 
-		if (toneHP > 0) {
-			m_filtersHPLegacy[0].setCoefficients(IIRCoefficients::makeHighPass(sampleRate, (double)toneHP, q));
-			m_filtersHPLegacy[1].setCoefficients(IIRCoefficients::makeHighPass(sampleRate, (double)toneHP, q));
-		}
+            for (int i = 0; i < numSamples; i++) {
+                float &sample = channelData[i];
 
-		m_filtersLPLegacy[0].setCoefficients(IIRCoefficients::makeLowPass(sampleRate, (double)toneLP, q));
-		m_filtersLPLegacy[1].setCoefficients(IIRCoefficients::makeLowPass(sampleRate, (double)toneLP, q));
-	}
+                // Legacy tone filter (from 1.2, weird Q value on a 2nd order filter)
+                if (filterMode == 0 && toneHP > 0) {
+                    sample = m_filtersHPLegacy[channel].processSingleSampleRaw(sample);
+                }
 
-	// Make a temporary buffer for the final mix
-	AudioSampleBuffer processBuffer;
-	processBuffer.makeCopyOf(buffer);
+                // Hard clip distortion
+                if (driveHard > 1.0f) {
+                    sample = Clamp(-1.0f, 1.0f, sample * driveHard);
+                }
 
-	dsp::AudioBlock<float> dspBlock(processBuffer);
-	dsp::ProcessContextReplacing<float> dspContext(dspBlock);
+                // Hyperbolic soft clip distortion
+                if (driveSoft > 1.0f) {
+                    sample = atanf(sample * driveSoft);
+                    sample = Clamp(-1.0f + symmetry, symmetry, sample);
+                }
 
-	// Apply input gain
-	processBuffer.applyGain(gainIn);
+                // Apply symmetry
+                if (sample < 0.0f) {
+                    sample *= (1.0f - symmetry);
+                } else {
+                    sample *= symmetry;
+                }
 
-	// Apply tone filter (6db/oct or 12db/oct high pass filter)
-	if (filterMode != 0 && toneHP > 0) {
-		// filterMode as order means 1st order = 6db/oct, 2nd order = 12db/oct
-		auto coeff = dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod((float)toneHP, sampleRate, filterMode);
-		m_filterHP.state->coefficients = coeff[0]->coefficients;
-		m_filterHP.process(dspContext);
-	}
+                // Legacy clip filter (from 1.2, weird Q value on a 2nd order filter)
+                if (filterMode == 0) {
+                    sample = m_filtersLPLegacy[channel].processSingleSampleRaw(sample);
+                }
+            }
+        }
 
-	//TODO: Turn this into a DSP processor?
-	for (int channel = 0; channel < Min(2, totalNumInputChannels); ++channel) {
-		float* channelData = processBuffer.getWritePointer(channel);
+        // Apply clip filter (6db/oct or 12db/oct low pass filter)
+        if (filterMode != 0) {
+            // filterMode as order means 1st order = 6db/oct, 2nd order = 12db/oct
+            auto coeff = dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(
+                (float)toneLP, sampleRate, filterMode);
+            m_filterLP.state->coefficients = coeff[0]->coefficients;
+            m_filterLP.process(dspContext);
+        }
 
-		for (int i = 0; i < numSamples; i++) {
-			float &sample = channelData[i];
+        // Apply mix from the buffer
+        for (int channel = 0; channel < Min(2, DISTRHO_PLUGIN_NUM_INPUTS); ++channel) {
+            float *channelData = buffer.getWritePointer(channel);
+            const float *processedData = processBuffer.getReadPointer(channel);
 
-			// Legacy tone filter (from 1.2, weird Q value on a 2nd order filter)
-			if (filterMode == 0 && toneHP > 0) {
-				sample = m_filtersHPLegacy[channel].processSingleSampleRaw(sample);
-			}
+            for (int i = 0; i < numSamples; i++) {
+                channelData[i] = Lerp(channelData[i], processedData[i], mix);
+            }
+        }
 
-			// Hard clip distortion
-			if (driveHard > 1.0f) {
-				sample = Clamp(-1.0f, 1.0f, sample * driveHard);
-			}
+        // And finally, apply output gain
+        buffer.applyGain(gainOut);
 
-			// Hyperbolic soft clip distortion
-			if (driveSoft > 1.0f) {
-				sample = atanf(sample * driveSoft);
-				sample = Clamp(-1.0f + symmetry, symmetry, sample);
-			}
+        if (outputs[0] != inputs[0])
+            std::memcpy(outputs[0], inputs[0], sizeof(float) * frames);
 
-			// Apply symmetry
-			if (sample < 0.0f) {
-				sample *= (1.0f - symmetry);
-			} else {
-				sample *= symmetry;
-			}
+        if (outputs[1] != inputs[1])
+            std::memcpy(outputs[1], inputs[1], sizeof(float) * frames);
+    }
 
-			// Legacy clip filter (from 1.2, weird Q value on a 2nd order filter)
-			if (filterMode == 0) {
-				sample = m_filtersLPLegacy[channel].processSingleSampleRaw(sample);
-			}
-		}
-	}
+  private:
+    FilterType m_filterHP;
+    FilterType m_filterLP;
+    juce::IIRFilter m_filtersHPLegacy[2];
+    juce::IIRFilter m_filtersLPLegacy[2];
+    float params[m_params];
 
-	// Apply clip filter (6db/oct or 12db/oct low pass filter)
-	if (filterMode != 0) {
-		// filterMode as order means 1st order = 6db/oct, 2nd order = 12db/oct
-		auto coeff = dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((float)toneLP, sampleRate, filterMode);
-		m_filterLP.state->coefficients = coeff[0]->coefficients;
-		m_filterLP.process(dspContext);
-	}
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Misstortion)
+};
 
-	// Apply mix from the buffer
-	for (int channel = 0; channel < Min(2, totalNumInputChannels); ++channel) {
-		float* channelData = buffer.getWritePointer(channel);
-		const float* processedData = processBuffer.getReadPointer(channel);
+Plugin *createPlugin() { return new Misstortion(); };
 
-		for (int i = 0; i < numSamples; i++) {
-			channelData[i] = Lerp(channelData[i], processedData[i], mix);
-		}
-	}
-
-	// And finally, apply output gain
-	buffer.applyGain(gainOut);
-}
-
-//==============================================================================
-bool MisstortionAudioProcessor::hasEditor() const
-{
-	return true; // (change this to false if you choose to not supply an editor)
-}
-
-AudioProcessorEditor* MisstortionAudioProcessor::createEditor()
-{
-	return new MisstortionAudioProcessorEditor(*this);
-}
-
-//==============================================================================
-void MisstortionAudioProcessor::getStateInformation(MemoryBlock& destData)
-{
-	auto xml = std::make_unique<XmlElement>("root");
-
-	XmlElement* xmlVersion = new XmlElement("version");
-	xmlVersion->addTextElement(JucePlugin_VersionString);
-	xml->addChildElement(xmlVersion);
-
-	XmlElement* xmlSettings = new XmlElement("settings");
-	xmlSettings->setAttribute("mix", *m_paramMix);
-	xmlSettings->setAttribute("gainin", *m_paramGainIn);
-	xmlSettings->setAttribute("gainout", *m_paramGainOut);
-
-	xmlSettings->setAttribute("drive", *m_paramDriveHard);
-	xmlSettings->setAttribute("drive2", *m_paramDriveSoft);
-	xmlSettings->setAttribute("tone", *m_paramToneHP);
-	xmlSettings->setAttribute("tonepost", *m_paramToneLP);
-	xmlSettings->setAttribute("symmetry", *m_paramSymmetry);
-	xmlSettings->setAttribute("filtermode", *m_paramFilterMode);
-	xml->addChildElement(xmlSettings);
-
-	copyXmlToBinary(*xml, destData);
-}
-
-void MisstortionAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
-{
-	std::unique_ptr<XmlElement> xml = getXmlFromBinary(data, sizeInBytes);
-
-	XmlElement* xmlSettings = xml->getChildByName("settings");
-	if (xmlSettings != nullptr) {
-		*m_paramMix = (float)xmlSettings->getDoubleAttribute("mix");
-		*m_paramGainIn = (float)xmlSettings->getDoubleAttribute("gainin");
-		*m_paramGainOut = (float)xmlSettings->getDoubleAttribute("gainout");
-
-		// From previous version, if it's set
-		double oldGainOut = xmlSettings->getDoubleAttribute("gain", -1.0f);
-		if (oldGainOut >= 0.0f) {
-			*m_paramGainIn = 0.0f;
-			*m_paramGainOut = (float)oldGainOut;
-		}
-
-		*m_paramDriveHard = (float)xmlSettings->getDoubleAttribute("drive");
-		*m_paramDriveSoft = (float)xmlSettings->getDoubleAttribute("drive2");
-		*m_paramToneHP = xmlSettings->getIntAttribute("tone");
-		*m_paramToneLP = xmlSettings->getIntAttribute("tonepost");
-		*m_paramSymmetry = (float)xmlSettings->getDoubleAttribute("symmetry");
-		*m_paramFilterMode = (int)xmlSettings->getIntAttribute("filtermode");
-	}
-
-#if defined(_DEBUG)
-	Logger::writeToLog(String::formatted("  Mix: %f", (float)*m_paramMix));
-	Logger::writeToLog(String::formatted("  Gain In: %f", (float)*m_paramGainIn));
-	Logger::writeToLog(String::formatted("  Gain Out: %f", (float)*m_paramGainOut));
-	Logger::writeToLog(String::formatted("  Drive: %f", (float)*m_paramDriveHard));
-	Logger::writeToLog(String::formatted("  Drive2: %f", (float)*m_paramDriveSoft));
-	Logger::writeToLog(String::formatted("  Tone: %d", (int)*m_paramToneHP));
-	Logger::writeToLog(String::formatted("  TonePost: %d", (int)*m_paramToneLP));
-	Logger::writeToLog(String::formatted("  Symmetry: %f", (float)*m_paramSymmetry));
-	Logger::writeToLog(String::formatted("  Filter Mode: %d", (int)*m_paramFilterMode));
-#endif
-}
-
-//==============================================================================
-// This creates new instances of the plugin..
-AudioProcessor* JUCE_CALLTYPE createPluginFilter()
-{
-	return new MisstortionAudioProcessor();
-}
+END_NAMESPACE_DISTRHO
