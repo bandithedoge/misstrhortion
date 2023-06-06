@@ -1,5 +1,7 @@
 #include "DistrhoPlugin.hpp"
+
 #include "DistrhoPluginInfo.h"
+#include "Parameters.h"
 #include "Utils.h"
 
 #define JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED
@@ -34,77 +36,7 @@ class Misstortion : public Plugin {
     };
 
     void initParameter(uint32_t index, Parameter &parameter) override {
-        parameter.hints = kParameterIsAutomatable;
-        parameter.ranges.min = 0.0f;
-        parameter.ranges.def = 0.0f;
-
-        switch (index) {
-        case m_paramMix:
-            parameter.name = "Mix";
-            parameter.symbol = "mix";
-            parameter.ranges.max = 100.0f;
-            parameter.ranges.def = 50.0f;
-            parameter.unit = "%";
-            break;
-        case m_paramGainIn:
-            parameter.name = "Gain in";
-            parameter.symbol = "gainin";
-            parameter.ranges.min = -50.0f;
-            parameter.ranges.max = 50.0f;
-            parameter.unit = "db";
-            break;
-        case m_paramGainOut:
-            parameter.name = "Gain out";
-            parameter.symbol = "gainout";
-            parameter.ranges.min = -50.0f;
-            parameter.ranges.max = 50.0f;
-            parameter.unit = "db";
-            break;
-        case m_paramDriveHard:
-            parameter.name = "Drive";
-            parameter.symbol = "drive";
-            parameter.ranges.max = 50.0f;
-            parameter.unit = "db";
-            break;
-        case m_paramDriveSoft:
-            parameter.name = "Drive 2";
-            parameter.symbol = "drive2";
-            parameter.ranges.max = 50.0f;
-            parameter.unit = "db";
-            break;
-        case m_paramToneHP:
-            parameter.hints |= kParameterIsInteger | kParameterIsLogarithmic;
-            parameter.name = "Tone";
-            parameter.symbol = "tone";
-            parameter.ranges.min = 1;
-            parameter.ranges.max = 20000;
-            parameter.ranges.def = 20000;
-            parameter.unit = "Hz";
-            break;
-        case m_paramToneLP:
-            parameter.hints |= kParameterIsInteger | kParameterIsLogarithmic;
-            parameter.name = "Tone Post";
-            parameter.symbol = "tonepost";
-            parameter.ranges.min = 1;
-            parameter.ranges.max = 20000;
-            parameter.ranges.def = 20000;
-            parameter.unit = "Hz";
-            break;
-        case m_paramSymmetry:
-            parameter.name = "Symmetry";
-            parameter.symbol = "symmetry";
-            parameter.ranges.def = 50.0f;
-            parameter.unit = "%";
-            break;
-        case m_paramFilterMode:
-            parameter.hints |= kParameterIsInteger;
-            parameter.name = "Filter Mode";
-            parameter.symbol = "filtermode";
-            parameter.ranges.min = 0;
-            parameter.ranges.max = 2;
-            parameter.ranges.def = 0;
-            break;
-        }
+        getParamInfo(index, &parameter);
     };
 
     float getParameterValue(uint32_t index) const override { return params[index]; }
@@ -145,7 +77,7 @@ class Misstortion : public Plugin {
         int toneLP = params[m_paramToneLP];
         float symmetry = (params[m_paramSymmetry] / 100.0f);
 
-        int filterMode = params[m_paramFilterMode];
+        int filterMode = floor(params[m_paramFilterMode]);
         if (filterMode == 0) {
             // Legacy (1.2 stock, very steep)
             double qo = pow(2.0, 6.0);
@@ -178,9 +110,9 @@ class Misstortion : public Plugin {
         if (filterMode != 0 && toneHP > 0) {
             // filterMode as order means 1st order = 6db/oct, 2nd order = 12db/oct
             auto coeff = dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(
-                (float)toneHP, sampleRate, filterMode);
+                toneHP, sampleRate, filterMode);
             m_filterHP.state->coefficients = coeff[0]->coefficients;
-            m_filterHP.process(dspContext);
+            // m_filterHP.process(dspContext);
         }
 
         // TODO: Turn this into a DSP processor?
@@ -226,7 +158,7 @@ class Misstortion : public Plugin {
             auto coeff = dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(
                 (float)toneLP, sampleRate, filterMode);
             m_filterLP.state->coefficients = coeff[0]->coefficients;
-            m_filterLP.process(dspContext);
+            // m_filterLP.process(dspContext);
         }
 
         // Apply mix from the buffer

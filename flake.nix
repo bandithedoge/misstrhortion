@@ -16,13 +16,23 @@
         version = "1.3";
         src = ./.;
 
-        nativeBuildInputs = with pkgs;
-          [
-            cmake
-            pkg-config
-          ]
-          ++ lib.optionals stdenv.targetPlatform.isLinux [
+        nativeBuildInputs = with pkgs; [
+          cmake
+          pkg-config
+        ];
+
+        buildInputs = with pkgs;
+          lib.optionals stdenv.targetPlatform.isLinux [
             alsa-lib
+            dbus
+            libGL
+            xorg.libX11
+            xorg.libXScrnSaver
+            xorg.libXcursor
+            xorg.libXext
+            xorg.libXfixes
+            xorg.libXi
+            xorg.libXrandr
           ];
 
         installPhase = ''

@@ -21,7 +21,8 @@ target_compile_definitions(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC
-    JUCE/modules)
+    JUCE/modules
+    DPF-Widgets/opengl)
 
 target_link_libraries(${PROJECT_NAME}
   PRIVATE

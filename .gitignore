@@ -5,3 +5,5 @@ CMakeFiles/
 .direnv/
 .cache/
 compile_commands.json
+
+result*
