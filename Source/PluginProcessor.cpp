@@ -15,7 +15,7 @@ START_NAMESPACE_DISTRHO
 
 class Misstortion : public Plugin {
   public:
-    Misstortion() : Plugin(m_params, 0, 0){};
+    Misstortion() : Plugin(m_params, 0, 0) { prepareFilters(); };
 
   protected:
     const char *getLabel() const override { return DISTRHO_PLUGIN_NAME; }
@@ -43,15 +43,9 @@ class Misstortion : public Plugin {
 
     void setParameterValue(uint32_t index, float value) override { params[index] = value; };
 
-    void sampleRateChanged(double newSampleRate) override {
-        juce::dsp::ProcessSpec dspSpec;
-        dspSpec.sampleRate = newSampleRate;
-        dspSpec.maximumBlockSize = getBufferSize();
-        dspSpec.numChannels = DISTRHO_PLUGIN_NUM_OUTPUTS;
+    void sampleRateChanged(double newSampleRate) override { prepareFilters(); }
 
-        m_filterHP.prepare(dspSpec);
-        m_filterLP.prepare(dspSpec);
-    }
+    void bufferSizeChanged(uint32_t newBufferSize) override { prepareFilters(); }
 
     void run(const float **inputs, float **outputs, uint32_t frames) override {
         using namespace juce;
@@ -112,7 +106,7 @@ class Misstortion : public Plugin {
             auto coeff = dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(
                 toneHP, sampleRate, filterMode);
             m_filterHP.state->coefficients = coeff[0]->coefficients;
-            // m_filterHP.process(dspContext);
+            m_filterHP.process(dspContext);
         }
 
         // TODO: Turn this into a DSP processor?
@@ -158,7 +152,7 @@ class Misstortion : public Plugin {
             auto coeff = dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(
                 (float)toneLP, sampleRate, filterMode);
             m_filterLP.state->coefficients = coeff[0]->coefficients;
-            // m_filterLP.process(dspContext);
+            m_filterLP.process(dspContext);
         }
 
         // Apply mix from the buffer
@@ -182,11 +176,21 @@ class Misstortion : public Plugin {
     }
 
   private:
+    juce::dsp::ProcessSpec dspSpec;
     FilterType m_filterHP;
     FilterType m_filterLP;
     juce::IIRFilter m_filtersHPLegacy[2];
     juce::IIRFilter m_filtersLPLegacy[2];
     float params[m_params];
+
+    void prepareFilters() {
+        dspSpec.sampleRate = getSampleRate();
+        dspSpec.maximumBlockSize = getBufferSize();
+        dspSpec.numChannels = DISTRHO_PLUGIN_NUM_OUTPUTS;
+
+        m_filterHP.prepare(dspSpec);
+        m_filterLP.prepare(dspSpec);
+    }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Misstortion)
 };

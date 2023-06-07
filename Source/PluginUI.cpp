@@ -25,8 +25,6 @@ class MisstortionUI : public UI {
         const float width = getWidth();
         const float height = getHeight();
 
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
-
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::SetNextWindowSize(ImVec2(width, height));
 
@@ -78,17 +76,22 @@ class MisstortionUI : public UI {
                     param->enumValues.values[1].label,
                     param->enumValues.values[2].label,
                 };
-                const int mode = floor(paramValues[m_paramFilterMode]);
+                int mode = floor(paramValues[m_paramFilterMode]);
                 const char *name = mode_names[mode];
 
-                if (ImGui::SliderInt(param->name, (int *)&paramValues[m_paramFilterMode],
-                                     param->ranges.min, param->ranges.max, name)) {
-                    if (ImGui::IsItemActivated())
-                        editParameter(m_paramFilterMode, true);
-                    setParameterValue(m_paramFilterMode, paramValues[m_paramFilterMode]);
+                ImGui::BeginTable("Filter", 3);
+                for (int i = 0; i < 3; i++) {
+                    ImGui::TableNextColumn();
+                    if (ImGui::RadioButton(mode_names[i], &mode, i)) {
+                        if (ImGui::IsItemActivated())
+                            editParameter(m_paramFilterMode, true);
+                        paramValues[m_paramFilterMode] = mode;
+                        setParameterValue(m_paramFilterMode, paramValues[m_paramFilterMode]);
+                    };
+                    if (ImGui::IsItemDeactivated())
+                        editParameter(m_paramFilterMode, false);
                 }
-                if (ImGui::IsItemDeactivated())
-                    editParameter(m_paramFilterMode, false);
+                ImGui::EndTable();
             }
 
             ImGui::EndGroup();
@@ -112,7 +115,10 @@ class MisstortionUI : public UI {
         for (int i = 0; i < m_params; i++) {
             if (i == m_paramGainIn || i == m_paramGainOut)
                 continue;
-            const float val = params[i]->ranges.min + (rand() % (int)params[i]->ranges.max);
+            const float val =
+                params[i]->ranges.min +
+                (rand() % (params[i]->hints & kParameterIsInteger ? (int)params[i]->ranges.max + 1
+                                                                  : (int)params[i]->ranges.max));
             setParameterValue(i, val);
             parameterChanged(i, val);
         }
