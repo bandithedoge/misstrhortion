@@ -1,3 +1,4 @@
+#include "DearImGui/imgui.h"
 #include "DistrhoUI.hpp"
 #include "Parameters.h"
 #include <ctime>
@@ -52,17 +53,17 @@ class MisstortionUI : public UI {
                 makeKnob(m_paramDriveSoft);
 
                 ImGui::TableNextColumn();
-                if (ImGui::Button(DISTRHO_PLUGIN_NAME " 1.3"))
+                if (ImGui::Button(DISTRHO_PLUGIN_NAME))
                     resetParameters();
                 if (ImGui::IsItemHovered()) {
                     ImGui::SetTooltip("Left-click to reset parameters, right-click to randomize");
                 }
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
                     randomizeParameters();
-                ImGui::Text("nimble.tools");
-                ImGui::Separator();
-                ImGui::Text("DPF port");
                 ImGui::Text("bandithedoge.com");
+                ImGui::Separator();
+                ImGui::TextWrapped("DPF port based on Misstortion 1.3");
+                ImGui::Text("nimble.tools");
             }
             ImGui::EndTable();
 
