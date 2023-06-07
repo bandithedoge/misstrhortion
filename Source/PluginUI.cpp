@@ -60,6 +60,8 @@ class MisstortionUI : public UI {
                 }
                 if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
                     randomizeParameters();
+                ImGui::SameLine();
+                ImGui::Text(PROJECT_VERSION);
                 ImGui::Text("bandithedoge.com");
                 ImGui::Separator();
                 ImGui::TextWrapped("DPF port based on Misstortion 1.3");

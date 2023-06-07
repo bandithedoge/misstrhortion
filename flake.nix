@@ -12,8 +12,8 @@
       pkgs = nixpkgs.legacyPackages.${system};
     in rec {
       packages.default = pkgs.stdenv.mkDerivation rec {
-        pname = "Misstortion";
-        version = "1.3";
+        pname = "Misstrhortion";
+        version = "1.0.0";
         src = ./.;
 
         nativeBuildInputs = with pkgs; [
@@ -54,7 +54,7 @@
       };
 
       devShells.default = pkgs.stdenv.mkDerivation {
-        name = "Misstortion";
+        name = packages.default.pname;
         inherit (packages.default) buildInputs;
         nativeBuildInputs = packages.default.nativeBuildInputs ++ (with pkgs; [clang-tools]);
       };

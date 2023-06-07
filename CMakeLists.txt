@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
 set(PROJECT_NAME Misstrhorortion)
 
-project(${PROJECT_NAME} VERSION 1.3)
+project(${PROJECT_NAME} VERSION 1.0.0)
 
 add_subdirectory(dpf)
 
