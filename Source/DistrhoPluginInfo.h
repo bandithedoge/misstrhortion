@@ -3,7 +3,11 @@
 #define DISTRHO_PLUGIN_BRAND "bandithedoge"
 #define DISTRHO_PLUGIN_NAME "Misstrhortion"
 #define DISTRHO_PLUGIN_URI "https://github.com/bandithedoge/misstrhortion"
+
 #define DISTRHO_PLUGIN_CLAP_ID "com.bandithedoge.misstrhortion"
+#define DISTRHO_PLUGIN_CLAP_FEATURES "audio-effect", "distortion"
+#define DISTRHO_PLUGIN_LV2_CATEGORY "lv2:DistortionPlugin"
+#define DISTRHO_PLUGIN_VST3_CATEGORIES "Fx|Distortion"
 
 #define DISTRHO_PLUGIN_HAS_UI 1
 #define DISTRHO_UI_USE_CUSTOM 1
