@@ -2,7 +2,6 @@ dpf_add_plugin(${PROJECT_NAME}
   TARGETS
     clap
     jack
-    ladspa
     lv2
     vst2
     vst3

@@ -1,4 +1,3 @@
-#include "DearImGui/imgui.h"
 #include "DistrhoUI.hpp"
 #include "Parameters.h"
 #include <ctime>

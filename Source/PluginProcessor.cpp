@@ -1,6 +1,4 @@
 #include "DistrhoPlugin.hpp"
-
-#include "DistrhoPluginInfo.h"
 #include "Parameters.h"
 #include "Utils.h"
 
@@ -15,7 +13,10 @@ START_NAMESPACE_DISTRHO
 
 class Misstortion : public Plugin {
   public:
-    Misstortion() : Plugin(m_params, 0, 0) { prepareFilters(); };
+    Misstortion() : Plugin(m_params, 0, 0) {
+        prepareFilters();
+        std::memset(params, 0, sizeof(params));
+    };
 
   protected:
     const char *getLabel() const override { return DISTRHO_PLUGIN_NAME; }
@@ -27,7 +28,9 @@ class Misstortion : public Plugin {
     const char *getMaker() const override { return DISTRHO_PLUGIN_BRAND; }
     const char *getHomePage() const override { return DISTRHO_PLUGIN_URI; }
     const char *getLicense() const override { return "GPLv3"; }
-    uint32_t getVersion() const override { return d_version(PROJECT_VERSION_MAJOR, PROJECT_VERSION_MINOR, PROJECT_VERSION_PATCH); }
+    uint32_t getVersion() const override {
+        return d_version(PROJECT_VERSION_MAJOR, PROJECT_VERSION_MINOR, PROJECT_VERSION_PATCH);
+    }
     int64_t getUniqueId() const override { return d_cconst('M', 's', 's', 't'); }
 
     void initAudioPort(bool input, uint32_t index, AudioPort &port) override {
