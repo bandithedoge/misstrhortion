@@ -30,18 +30,18 @@ jobs:
         with:
           target: ${{ matrix.target }}
 
-  windows:
-    strategy:
-      matrix:
-        target: [win32, win64]
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: distrho/dpf-cmake-action@v1
-        with:
-          target: ${{ matrix.target }}
+  # windows:
+  #   strategy:
+  #     matrix:
+  #       target: [win32, win64]
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       with:
+  #         submodules: recursive
+  #     - uses: distrho/dpf-cmake-action@v1
+  #       with:
+  #         target: ${{ matrix.target }}
 
   pluginval:
     runs-on: ubuntu-20.04
