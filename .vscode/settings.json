@@ -1,0 +1,9 @@
+{
+  "yaml.schemas": {
+    "https://json.schemastore.org/clangd.json": "file:///e%3A/git/misstortion1/.clangd"
+},
+"files.associations": {
+    ".clangd": "yaml",
+    "ctime": "cpp"
+},
+}

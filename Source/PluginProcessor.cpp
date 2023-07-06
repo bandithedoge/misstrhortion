@@ -14,8 +14,12 @@ START_NAMESPACE_DISTRHO
 class Misstortion : public Plugin {
   public:
     Misstortion() : Plugin(m_params, 0, 0) {
+        for (int i = 0; i < m_params; i++) {
+          auto param = getParamInfo(i);
+          setParameterValue(i, param->ranges.def);
+        }
+
         prepareFilters();
-        std::memset(params, 0, sizeof(params));
     };
 
   protected:

@@ -1,3 +1,4 @@
+#include "DistrhoPluginUtils.hpp"
 #include "DistrhoUI.hpp"
 #include "Parameters.h"
 #include <ctime>
@@ -11,8 +12,6 @@ class MisstortionUI : public UI {
 
         for (int i = 0; i < m_params; i++)
             params[i] = getParamInfo(i);
-
-        setGeometryConstraints(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT);
     };
 
   protected:
@@ -39,8 +38,7 @@ class MisstortionUI : public UI {
             ImGui::BeginGroup();
 
             if (ImGui::BeginTable("knobs", 5,
-                                  ImGuiTableFlags_SizingStretchProp |
-                                      ImGuiTableFlags_NoBordersInBody |
+                                  ImGuiTableFlags_SizingStretchProp | ImGuiTableFlags_NoBordersInBody |
                                       ImGuiTableFlags_NoHostExtendX)) {
                 ImGui::TableNextColumn();
                 makeKnob(m_paramMix);
@@ -52,15 +50,24 @@ class MisstortionUI : public UI {
                 makeKnob(m_paramDriveSoft);
 
                 ImGui::TableNextColumn();
-                if (ImGui::Button(DISTRHO_PLUGIN_NAME))
-                    resetParameters();
-                if (ImGui::IsItemHovered()) {
-                    ImGui::SetTooltip("Left-click to reset parameters, right-click to randomize");
+                if (ImGui::Button("..."))
+                    ImGui::OpenPopup("settings");
+
+                if (ImGui::BeginPopup("settings")) {
+                    if (ImGui::Button("Reset parameters"))
+                        resetParameters();
+                    if (ImGui::IsItemHovered())
+                        ImGui::SetTooltip("Right-click to randomize");
+                    if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
+                        randomizeParameters();
+                    ImGui::Separator();
+                    ImGui::TextDisabled(getPluginFormatName());
+                    ImGui::EndPopup();
                 }
-                if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
-                    randomizeParameters();
                 ImGui::SameLine();
-                ImGui::Text(PROJECT_VERSION);
+                ImGui::Text(DISTRHO_PLUGIN_NAME);
+                ImGui::SameLine();
+                ImGui::TextDisabled(PROJECT_VERSION);
                 ImGui::Text("bandithedoge.com");
                 ImGui::Separator();
                 ImGui::TextWrapped("DPF port based on Misstortion 1.3");
@@ -115,12 +122,11 @@ class MisstortionUI : public UI {
 
     void randomizeParameters() {
         for (int i = 0; i < m_params; i++) {
-            if (i == m_paramGainIn || i == m_paramGainOut)
+            if (i == m_paramGainIn || i == m_paramGainOut || i == m_paramBypass)
                 continue;
-            const float val =
-                params[i]->ranges.min +
-                (rand() % (params[i]->hints & kParameterIsInteger ? (int)params[i]->ranges.max + 1
-                                                                  : (int)params[i]->ranges.max));
+            const float val = params[i]->ranges.min +
+                              (rand() % (params[i]->hints & kParameterIsInteger ? (int)params[i]->ranges.max + 1
+                                                                                : (int)params[i]->ranges.max));
             setParameterValue(i, val);
             parameterChanged(i, val);
         }
@@ -129,8 +135,7 @@ class MisstortionUI : public UI {
     void makeKnob(int index) {
         auto param = params[index];
 
-        if (ImGuiKnobs::Knob(param->name, &paramValues[index], param->ranges.min, param->ranges.max,
-                             0,
+        if (ImGuiKnobs::Knob(param->name, &paramValues[index], param->ranges.min, param->ranges.max, 0,
                              "%.1f" + (param->unit == "%"
                                            // using "%%" causes weird type errors for some reason
                                            ? param->unit + param->unit
@@ -152,11 +157,10 @@ class MisstortionUI : public UI {
             flags |= ImGuiSliderFlags_Logarithmic;
 
         bool slider = vertical
-                          ? ImGui::VSliderFloat(param->name, ImVec2(40, 165), &paramValues[index],
-                                                param->ranges.min, param->ranges.max,
-                                                "%.1f\n" + param->unit, flags)
-                          : ImGui::SliderFloat(param->name, &paramValues[index], param->ranges.min,
-                                               param->ranges.max, "%.0f " + param->unit, flags);
+                          ? ImGui::VSliderFloat(param->name, ImVec2(40, 165), &paramValues[index], param->ranges.min,
+                                                param->ranges.max, "%.1f\n" + param->unit, flags)
+                          : ImGui::SliderFloat(param->name, &paramValues[index], param->ranges.min, param->ranges.max,
+                                               "%.0f " + param->unit, flags);
 
         if (slider) {
             if (ImGui::IsItemActivated())
