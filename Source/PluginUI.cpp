@@ -61,7 +61,7 @@ class MisstortionUI : public UI {
                     if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
                         randomizeParameters();
                     ImGui::Separator();
-                    ImGui::TextDisabled(getPluginFormatName());
+                    ImGui::TextDisabled("%s", getPluginFormatName());
                     ImGui::EndPopup();
                 }
                 ImGui::SameLine();

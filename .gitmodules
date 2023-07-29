@@ -1,10 +1,10 @@
-[submodule "dpf"]
-	path = dpf
-	url = https://github.com/DISTRHO/DPF
-	branch = develop
 [submodule "DPF-Widgets"]
 	path = DPF-Widgets
 	url = https://github.com/DISTRHO/DPF-Widgets.git
 [submodule "JUCE"]
 	path = JUCE
 	url = https://github.com/DISTRHO/JUCE
+[submodule "dpf"]
+	path = dpf
+	url = https://github.com/DISTRHO/DPF
+	branch = develop
