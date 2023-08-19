@@ -10,13 +10,17 @@ add_subdirectory(dpf)
 set(JUCE_MODULES_ONLY ON)
 add_subdirectory(JUCE)
 
-# https://forum.juce.com/t/compilation-issues-when-supporting-some-old-linux-platforms/32051
-target_compile_definitions(juce_core
-  INTERFACE
-    _NL_IDENTIFICATION_LANGUAGE=0x42
-    _NL_IDENTIFICATION_TERRITORY=0x43)
-
 add_subdirectory(Source)
+
+if(MINGW)
+  find_package(GLEW REQUIRED)
+  target_include_directories(${PROJECT_NAME}
+    PUBLIC
+      ${GLEW_INCLUDE_DIRS}/GL)
+  target_compile_definitions(${PROJECT_NAME}
+    PUBLIC
+      __MSYS__)
+endif()
 
 target_compile_definitions(${PROJECT_NAME}
   PUBLIC
@@ -83,6 +87,8 @@ install(
   LIBRARY)
 set(CPACK_NSIS_VST3_INSTALL_DIRECTORY ${COMMON_FILES_PATH})
 
+# HACK: JUCE always installs its own headers regardless of settings so we have
+#       to remove all unspecified components and add everything else manually.
 get_cmake_property(CPACK_COMPONENTS_ALL COMPONENTS)
 list(REMOVE_ITEM CPACK_COMPONENTS_ALL Unspecified)
 

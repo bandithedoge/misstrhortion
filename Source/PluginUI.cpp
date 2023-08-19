@@ -1,3 +1,8 @@
+#include "DearImGui/imgui.h"
+#ifdef __MSYS__
+#include "glew.h"
+#endif
+
 #include "DistrhoPluginUtils.hpp"
 #include "DistrhoUI.hpp"
 #include "Parameters.h"
