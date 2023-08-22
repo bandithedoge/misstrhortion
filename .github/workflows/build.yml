@@ -29,22 +29,37 @@ jobs:
           lto: true
 
   windows:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
-      - uses: distrho/dpf-cmake-action@v1
+      - uses: msys2/setup-msys2@v2
         with:
-          target: win64
-          pawpaw: true
-
-  source:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
+          msystem: ucrt64
+          update: true
+          pacboy: >-
+            toolchain:p
+            cmake:p
+            ninja:p
+            glew:p
+      - name: Build plugin
+        run: |
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+      - name: Create release package
+        working-directory: build
+        run: |
+          cpack -G NSIS
+          cpack -G ZIP
+      - uses: actions/upload-artifact@v3
         with:
-          submodules: recursive
-      - uses: distrho/dpf-makefile-action@v1
+          name: Misstrhortion-${{ github.sha }}-win64.exe
+          path: build/Misstrhortion-*-win64.exe
+      - uses: actions/upload-artifact@v3
         with:
-          target: source
+          name: Misstrhortion-${{ github.sha }}-win64.zip
+          path: build/Misstrhortion-*-win64.zip

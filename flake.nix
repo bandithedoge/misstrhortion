@@ -16,22 +16,24 @@
         pkgs,
         ...
       }: rec {
-        packages.default = pkgs.stdenv.mkDerivation {
-          pname = "Misstrhortion";
-          version = "1.0.0";
-          src = ./.;
+        packages = rec {
+          default = let
+          in pkgs.stdenv.mkDerivation {
+            pname = "Misstrhortion";
+            version = "1.0.0";
+            src = ./.;
 
-          nativeBuildInputs = with pkgs; [
-            cmake
-            pkg-config
-          ];
+            nativeBuildInputs = with pkgs; [
+              cmake
+              pkg-config
+            ];
 
-          buildInputs = with pkgs;
-            lib.optionals stdenv.hostPlatform.isLinux [
-              libGL
-              xorg.libX11
-            ]
-            ++ (lib.optionals stdenv.hostPlatform.isMusl [libexecinfo]);
+            buildInputs = with pkgs;
+              lib.optionals stdenv.hostPlatform.isLinux [
+                libglvnd
+                xorg.libX11
+              ];
+          };
         };
         devShells.default = pkgs.stdenv.mkDerivation {
           name = packages.default.pname;
