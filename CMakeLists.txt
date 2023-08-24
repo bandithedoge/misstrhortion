@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.25)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED On)
@@ -12,10 +12,10 @@ add_subdirectory(JUCE)
 
 # musl builds fail without this
 # see: https://forum.juce.com/t/compilation-issues-when-supporting-some-old-linux-platforms/32051
-target_compile_definitions(juce_core
-  INTERFACE
-    _NL_IDENTIFICATION_LANGUAGE=0x42
-    _NL_IDENTIFICATION_TERRITORY=0x43)
+# target_compile_definitions(juce_core
+#   INTERFACE
+#     _NL_IDENTIFICATION_LANGUAGE=0x42
+#     _NL_IDENTIFICATION_TERRITORY=0x43)
 
 add_subdirectory(Source)
 
@@ -28,16 +28,6 @@ if(MINGW)
     PUBLIC
       __MSYS__)
 endif()
-
-target_compile_definitions(${PROJECT_NAME}
-  PUBLIC
-    PROJECT_VERSION="${PROJECT_VERSION}"
-    PROJECT_VERSION_MAJOR=${PROJECT_VERSION_MAJOR}
-    PROJECT_VERSION_MINOR=${PROJECT_VERSION_MINOR}
-    PROJECT_VERSION_PATCH=${PROJECT_VERSION_PATCH}
-    JUCE_WEB_BROWSER=0
-    JUCE_USE_CURL=0
-    JUCE_VST3_CAN_REPLACE_VST2=0)
 
 target_include_directories(${PROJECT_NAME}
   PUBLIC
@@ -100,6 +90,7 @@ get_cmake_property(CPACK_COMPONENTS_ALL COMPONENTS)
 list(REMOVE_ITEM CPACK_COMPONENTS_ALL Unspecified)
 
 set(CPACK_PACKAGE_VENDOR bandithedoge)
+set(CPACK_PACKAGE_CONTACT bandithedoge@protonmail.com)
 set(CPACK_PACKAGE_INSTALL_DIRECTORY ${PROJECT_NAME})
 set(CPACK_PACKAGE_EXECUTABLES ${PROJECT_NAME};${PROJECT_NAME})
 

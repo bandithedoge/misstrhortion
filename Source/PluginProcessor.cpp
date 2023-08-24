@@ -5,9 +5,7 @@
 #define JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED
 #include "juce_dsp/juce_dsp.h"
 
-typedef juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>,
-                                       juce::dsp::IIR::Coefficients<float>>
-    FilterType;
+typedef juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>> FilterType;
 
 START_NAMESPACE_DISTRHO
 
@@ -15,8 +13,8 @@ class Misstortion : public Plugin {
   public:
     Misstortion() : Plugin(m_params, 0, 0) {
         for (int i = 0; i < m_params; i++) {
-          auto param = getParamInfo(i);
-          setParameterValue(i, param->ranges.def);
+            auto param = getParamInfo(i);
+            setParameterValue(i, param->ranges.def);
         }
 
         prepareFilters();
@@ -42,9 +40,7 @@ class Misstortion : public Plugin {
         Plugin::initAudioPort(input, index, port);
     };
 
-    void initParameter(uint32_t index, Parameter &parameter) override {
-        getParamInfo(index, &parameter);
-    };
+    void initParameter(uint32_t index, Parameter &parameter) override { getParamInfo(index, &parameter); };
 
     float getParameterValue(uint32_t index) const override { return params[index]; }
 
@@ -85,16 +81,12 @@ class Misstortion : public Plugin {
             double q = sqrt(qo) / (qo - 1);
 
             if (toneHP > 0) {
-                m_filtersHPLegacy[0].setCoefficients(
-                    IIRCoefficients::makeHighPass(sampleRate, (double)toneHP, q));
-                m_filtersHPLegacy[1].setCoefficients(
-                    IIRCoefficients::makeHighPass(sampleRate, (double)toneHP, q));
+                m_filtersHPLegacy[0].setCoefficients(IIRCoefficients::makeHighPass(sampleRate, (double)toneHP, q));
+                m_filtersHPLegacy[1].setCoefficients(IIRCoefficients::makeHighPass(sampleRate, (double)toneHP, q));
             }
 
-            m_filtersLPLegacy[0].setCoefficients(
-                IIRCoefficients::makeLowPass(sampleRate, (double)toneLP, q));
-            m_filtersLPLegacy[1].setCoefficients(
-                IIRCoefficients::makeLowPass(sampleRate, (double)toneLP, q));
+            m_filtersLPLegacy[0].setCoefficients(IIRCoefficients::makeLowPass(sampleRate, (double)toneLP, q));
+            m_filtersLPLegacy[1].setCoefficients(IIRCoefficients::makeLowPass(sampleRate, (double)toneLP, q));
         }
 
         // Make a temporary buffer for the final mix
@@ -110,8 +102,8 @@ class Misstortion : public Plugin {
         // Apply tone filter (6db/oct or 12db/oct high pass filter)
         if (filterMode != 0 && toneHP > 0) {
             // filterMode as order means 1st order = 6db/oct, 2nd order = 12db/oct
-            auto coeff = dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(
-                toneHP, sampleRate, filterMode);
+            auto coeff =
+                dsp::FilterDesign<float>::designIIRHighpassHighOrderButterworthMethod(toneHP, sampleRate, filterMode);
             m_filterHP.state->coefficients = coeff[0]->coefficients;
             m_filterHP.process(dspContext);
         }
@@ -156,8 +148,8 @@ class Misstortion : public Plugin {
         // Apply clip filter (6db/oct or 12db/oct low pass filter)
         if (filterMode != 0) {
             // filterMode as order means 1st order = 6db/oct, 2nd order = 12db/oct
-            auto coeff = dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod(
-                (float)toneLP, sampleRate, filterMode);
+            auto coeff = dsp::FilterDesign<float>::designIIRLowpassHighOrderButterworthMethod((float)toneLP, sampleRate,
+                                                                                              filterMode);
             m_filterLP.state->coefficients = coeff[0]->coefficients;
             m_filterLP.process(dspContext);
         }
