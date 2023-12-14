@@ -12,18 +12,14 @@ add_compile_definitions(
 
 add_subdirectory(dpf)
 
-add_library(juce
-  OBJECT
+add_subdirectory(Source)
+
+target_sources(${PROJECT_NAME}-dsp
+  PUBLIC
     JUCE/modules/juce_dsp/juce_dsp.cpp
     JUCE/modules/juce_audio_formats/juce_audio_formats.cpp
     JUCE/modules/juce_audio_basics/juce_audio_basics.cpp
     JUCE/modules/juce_core/juce_core.cpp)
-
-target_include_directories(juce
-  PUBLIC
-    JUCE/modules)
-
-add_subdirectory(Source)
 
 if(MINGW)
   find_package(GLEW REQUIRED)
