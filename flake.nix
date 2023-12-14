@@ -17,8 +17,7 @@
         ...
       }: rec {
         packages = rec {
-          default = let
-          in pkgs.stdenv.mkDerivation {
+          default = pkgs.stdenv.mkDerivation {
             pname = "Misstrhortion";
             version = "1.0.0";
             src = ./.;
@@ -30,7 +29,9 @@
 
             buildInputs = with pkgs;
               lib.optionals stdenv.hostPlatform.isLinux [
-                libglvnd
+                alsa-lib
+                dbus
+                libGL
                 xorg.libX11
               ];
           };
