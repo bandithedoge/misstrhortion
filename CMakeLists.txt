@@ -29,6 +29,20 @@ if(MINGW)
   target_compile_definitions(${PROJECT_NAME}
     PUBLIC
       __MSYS__)
+  target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+      comdlg32
+      imm32
+      ole32
+      oleaut32
+      rpcrt4
+      shlwapi
+      uuid
+      version
+      wininet
+      winmm
+      ws2_32
+      wsock32)
 endif()
 
 target_include_directories(${PROJECT_NAME}
