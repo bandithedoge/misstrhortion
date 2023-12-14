@@ -2,7 +2,7 @@
 #include "Parameters.h"
 #include "Utils.h"
 
-#define JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED
+/* #define JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED */
 #include "juce_dsp/juce_dsp.h"
 
 typedef juce::dsp::ProcessorDuplicator<juce::dsp::IIR::Filter<float>, juce::dsp::IIR::Coefficients<float>> FilterType;

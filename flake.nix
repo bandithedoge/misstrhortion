@@ -14,9 +14,10 @@
       perSystem = {
         config,
         pkgs,
+        self',
         ...
-      }: rec {
-        packages = rec {
+      }: {
+        packages = {
           default = pkgs.stdenv.mkDerivation {
             pname = "Misstrhortion";
             version = "1.0.0";
@@ -29,17 +30,15 @@
 
             buildInputs = with pkgs;
               lib.optionals stdenv.hostPlatform.isLinux [
-                alsa-lib
-                dbus
                 libGL
                 xorg.libX11
               ];
           };
         };
         devShells.default = pkgs.stdenv.mkDerivation {
-          name = packages.default.pname;
-          inherit (packages.default) buildInputs;
-          nativeBuildInputs = packages.default.nativeBuildInputs ++ (with pkgs; [clang-tools]);
+          name = self'.packages.default.pname;
+          inherit (self'.packages.default) buildInputs;
+          nativeBuildInputs = self'.packages.default.nativeBuildInputs ++ (with pkgs; [clang-tools]);
         };
       };
     };
