@@ -13,11 +13,11 @@ add_compile_definitions(
 add_subdirectory(dpf)
 
 add_library(juce
-  JUCE/modules/juce_dsp/juce_dsp.cpp
-  JUCE/modules/juce_audio_formats/juce_audio_formats.cpp
-  JUCE/modules/juce_audio_basics/juce_audio_basics.cpp
-  JUCE/modules/juce_core/juce_core.cpp
-)
+  OBJECT
+    JUCE/modules/juce_dsp/juce_dsp.cpp
+    JUCE/modules/juce_audio_formats/juce_audio_formats.cpp
+    JUCE/modules/juce_audio_basics/juce_audio_basics.cpp
+    JUCE/modules/juce_core/juce_core.cpp)
 
 target_include_directories(juce
   PUBLIC
@@ -39,10 +39,6 @@ target_include_directories(${PROJECT_NAME}
   PUBLIC
     JUCE/modules
     DPF-Widgets/opengl)
-
-target_link_libraries(${PROJECT_NAME}
-  PRIVATE
-    juce)
 
 include(GNUInstallDirs)
 set(COMMON_FILES_PATH "C:\\\\Program Files\\\\Common Files")

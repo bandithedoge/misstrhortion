@@ -7,6 +7,7 @@ dpf_add_plugin(${PROJECT_NAME}
     vst3
   FILES_DSP
     PluginProcessor.cpp
+    $<TARGET_OBJECTS:juce>
   FILES_UI
     PluginUI.cpp
     ../DPF-Widgets/opengl/DearImGui.cpp
