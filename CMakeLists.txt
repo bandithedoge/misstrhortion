@@ -5,21 +5,19 @@ set(CMAKE_CXX_STANDARD_REQUIRED On)
 
 project(Misstrhortion VERSION 1.0.0)
 
-add_compile_definitions(
-    JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED
-    JUCE_STANDALONE_APPLICATION
-    JUCE_USE_CURL=0)
-
 add_subdirectory(dpf)
 
-add_subdirectory(Source)
+set(JUCE_MODULES_ONLY ON)
+add_subdirectory(JUCE)
 
-target_sources(${PROJECT_NAME}-dsp
-  PUBLIC
-    JUCE/modules/juce_audio_basics/juce_audio_basics.cpp
-    JUCE/modules/juce_audio_formats/juce_audio_formats.cpp
-    JUCE/modules/juce_core/juce_core.cpp
-    JUCE/modules/juce_dsp/juce_dsp.cpp)
+# musl builds fail without this
+# see: https://forum.juce.com/t/compilation-issues-when-supporting-some-old-linux-platforms/32051
+# target_compile_definitions(juce_core
+#   INTERFACE
+#     _NL_IDENTIFICATION_LANGUAGE=0x42
+#     _NL_IDENTIFICATION_TERRITORY=0x43)
+
+add_subdirectory(Source)
 
 if(MINGW)
   find_package(GLEW REQUIRED)
@@ -45,26 +43,14 @@ if(MINGW)
       wsock32)
 endif()
 
-if(APPLE)
-  target_compile_options(${PROJECT_NAME}-dsp BEFORE
-    PRIVATE
-      -xobjective-c)
-  target_link_libraries(${PROJECT_NAME}
-    PRIVATE
-      "-framework Accelerate"
-      "-framework AudioToolbox"
-      "-framework Cocoa"
-      "-framework CoreAudio"
-      "-framework CoreMIDI"
-      "-framework Foundation"
-      "-framework IOKit"
-      "-framework QuartzCore")
-endif()
-
 target_include_directories(${PROJECT_NAME}
   PUBLIC
     JUCE/modules
     DPF-Widgets/opengl)
+
+target_link_libraries(${PROJECT_NAME}
+  PRIVATE
+    juce_dsp)
 
 include(GNUInstallDirs)
 set(COMMON_FILES_PATH "C:\\\\Program Files\\\\Common Files")
@@ -110,6 +96,11 @@ install(
   COMPONENT VST3
   LIBRARY)
 set(CPACK_NSIS_VST3_INSTALL_DIRECTORY ${COMMON_FILES_PATH})
+
+# HACK: JUCE always installs its own headers regardless of settings so we have
+#       to remove all unspecified components and add everything else manually.
+get_cmake_property(CPACK_COMPONENTS_ALL COMPONENTS)
+list(REMOVE_ITEM CPACK_COMPONENTS_ALL Unspecified)
 
 set(CPACK_PACKAGE_VENDOR bandithedoge)
 set(CPACK_PACKAGE_CONTACT bandithedoge@protonmail.com)
