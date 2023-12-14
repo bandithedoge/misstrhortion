@@ -16,10 +16,10 @@ add_subdirectory(Source)
 
 target_sources(${PROJECT_NAME}-dsp
   PUBLIC
-    JUCE/modules/juce_dsp/juce_dsp.cpp
-    JUCE/modules/juce_audio_formats/juce_audio_formats.cpp
     JUCE/modules/juce_audio_basics/juce_audio_basics.cpp
-    JUCE/modules/juce_core/juce_core.cpp)
+    JUCE/modules/juce_audio_formats/juce_audio_formats.cpp
+    JUCE/modules/juce_core/juce_core.cpp
+    JUCE/modules/juce_dsp/juce_dsp.cpp)
 
 if(MINGW)
   find_package(GLEW REQUIRED)
@@ -43,6 +43,22 @@ if(MINGW)
       winmm
       ws2_32
       wsock32)
+endif()
+
+if(APPLE)
+  target_compile_options(${PROJECT_NAME}-dsp BEFORE
+    PRIVATE
+      -xobjective-c)
+  target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+      "-framework Accelerate"
+      "-framework AudioToolbox"
+      "-framework Cocoa"
+      "-framework CoreAudio"
+      "-framework CoreMIDI"
+      "-framework Foundation"
+      "-framework IOKit"
+      "-framework QuartzCore")
 endif()
 
 target_include_directories(${PROJECT_NAME}
