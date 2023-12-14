@@ -13,7 +13,6 @@ add_compile_definitions(
 add_subdirectory(dpf)
 
 add_library(juce
-  STATIC
   JUCE/modules/juce_dsp/juce_dsp.cpp
   JUCE/modules/juce_audio_formats/juce_audio_formats.cpp
   JUCE/modules/juce_audio_basics/juce_audio_basics.cpp
@@ -23,13 +22,6 @@ add_library(juce
 target_include_directories(juce
   PUBLIC
     JUCE/modules)
-
-# musl builds fail without this
-# see: https://forum.juce.com/t/compilation-issues-when-supporting-some-old-linux-platforms/32051
-# target_compile_definitions(juce_core
-#   INTERFACE
-#     _NL_IDENTIFICATION_LANGUAGE=0x42
-#     _NL_IDENTIFICATION_TERRITORY=0x43)
 
 add_subdirectory(Source)
 
@@ -51,14 +43,6 @@ target_include_directories(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   PRIVATE
     juce)
-
-find_package(Backtrace)
-
-if(Backtrace_FOUND)
-  target_link_libraries(${PROJECT_NAME}
-    PRIVATE
-      ${Backtrace_LIBRARY})
-endif()
 
 include(GNUInstallDirs)
 set(COMMON_FILES_PATH "C:\\\\Program Files\\\\Common Files")
