@@ -3,7 +3,7 @@
 ![2023-12-14-17:53:26](https://github.com/bandithedoge/misstrhortion/assets/26331682/a95ddb2a-e53b-4c9c-a764-fc483becb8ea)
 
 
-**This project is NOT associated with or supported by @nimbletools. Please do not bother them with issues related to this port.**
+**This project is NOT associated with or supported by [nimble.tools](https://github.com/nimbletools). Please do not bother them with issues related to this port.**
 
 This is a WIP port of the old [Misstortion](https://github.com/nimbletools/misstortion1) to use [DPF](https://github.com/DISTRHO/DPF) instead of JUCE, allowing wider plugin format and platform support. Terrible name, I know.
 
@@ -11,7 +11,7 @@ This is a WIP port of the old [Misstortion](https://github.com/nimbletools/misst
 
 - more natively supported platforms (Windows, macOS, Linux) and plugin formats (CLAP, LV2, VST2, VST3, JACK/Standalone)
   - Misstortion 1 is only built for Windows and macOS as a VST3 plugin.
-  - @pdesaulniers maintains a [fork](https://github.com/pdesaulniers/misstortion1) that supports LV2 on Linux
+  - [pdesaulniers](https://github.com/pdesaulniers) maintains a [fork](https://github.com/pdesaulniers/misstortion1) that supports LV2 on Linux
   - AU and AAX are not and probably never will be supported. If you absolutely need to use these formats consider [Misstortion 2](https://nimble.itch.io/misstortion) or a wrapper such as [Blue Cat's PatchWork](https://www.bluecataudio.com/Products/Product_PatchWork/)
 - all-new GUI
 
