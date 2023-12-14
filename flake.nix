@@ -29,8 +29,6 @@
 
             buildInputs = with pkgs;
               lib.optionals stdenv.hostPlatform.isLinux [
-                alsa-lib
-                dbus
                 libGL
                 xorg.libX11
               ];
