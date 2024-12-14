@@ -1,6 +1,7 @@
 [submodule "DPF-Widgets"]
 	path = DPF-Widgets
 	url = https://github.com/DISTRHO/DPF-Widgets.git
+	branch = main
 [submodule "dpf"]
 	path = dpf
 	url = https://github.com/DISTRHO/DPF
@@ -8,3 +9,4 @@
 [submodule "JUCE"]
 	path = JUCE
 	url = https://github.com/DISTRHO/JUCE
+	branch = develop-distrho

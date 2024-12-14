@@ -16,7 +16,7 @@
         pkgs,
         ...
       }: rec {
-        packages = rec {
+        packages = {
           default = pkgs.stdenv.mkDerivation {
             pname = "Misstrhortion";
             version = "1.0.0";

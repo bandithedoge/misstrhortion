@@ -19,15 +19,24 @@ add_subdirectory(JUCE)
 
 add_subdirectory(Source)
 
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+    JUCE/modules
+    DPF-Widgets/opengl)
+
+target_link_libraries(${PROJECT_NAME}
+  PRIVATE
+    juce_dsp)
+
 if(MINGW)
-  find_package(GLEW REQUIRED)
-  target_include_directories(${PROJECT_NAME}
+    find_package(GLEW REQUIRED)
+    target_include_directories(${PROJECT_NAME}
     PUBLIC
       ${GLEW_INCLUDE_DIRS}/GL)
-  target_compile_definitions(${PROJECT_NAME}
+    target_compile_definitions(${PROJECT_NAME}
     PUBLIC
       __MSYS__)
-  target_link_libraries(${PROJECT_NAME}
+    target_link_libraries(${PROJECT_NAME}
     PUBLIC
       comdlg32
       imm32
@@ -42,15 +51,6 @@ if(MINGW)
       ws2_32
       wsock32)
 endif()
-
-target_include_directories(${PROJECT_NAME}
-  PUBLIC
-    JUCE/modules
-    DPF-Widgets/opengl)
-
-target_link_libraries(${PROJECT_NAME}
-  PRIVATE
-    juce_dsp)
 
 include(GNUInstallDirs)
 set(COMMON_FILES_PATH "C:\\\\Program Files\\\\Common Files")
