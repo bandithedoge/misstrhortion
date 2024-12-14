@@ -13,6 +13,7 @@ jobs:
         uses: prompt/actions-commit-hash@v2
       - name: Build plugin
         run: |
+          sudo apt update
           sudo apt install -yqq libglvnd-dev
           cmake -B build -DCMAKE_BUILD_TYPE=Release
           cmake --build build
