@@ -1,7 +1,6 @@
 # Misst*rh*ortion
 
-![2023-12-14-17:53:26](https://github.com/bandithedoge/misstrhortion/assets/26331682/a95ddb2a-e53b-4c9c-a764-fc483becb8ea)
-
+![image](https://github.com/user-attachments/assets/13ea5d3f-8760-4bcd-b77c-e3862b92e19e)
 
 **This project is NOT associated with or supported by [nimble.tools](https://github.com/nimbletools). Please do not bother them with issues related to this port.**
 
