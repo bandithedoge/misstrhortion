@@ -31,6 +31,22 @@ class MisstortionUI : public UI {
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::SetNextWindowSize(ImVec2(width, height));
 
+        ImGuiStyle &style = ImGui::GetStyle();
+        style.Colors[ImGuiCol_Text] = ImVec4(0.69, 0.74, 0.75, 1);
+        style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.4, 0.49, 0.5, 1);
+        style.Colors[ImGuiCol_WindowBg] = ImVec4(0.13, 0.16, 0.16, 1);
+        style.Colors[ImGuiCol_FrameBg] = ImVec4(0.17, 0.21, 0.21, 1);
+        style.Colors[ImGuiCol_Button] = style.Colors[ImGuiCol_FrameBg];
+        style.Colors[ImGuiCol_Separator] = style.Colors[ImGuiCol_FrameBg];
+        style.Colors[ImGuiCol_PopupBg] = style.Colors[ImGuiCol_FrameBg];
+        style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.4, 0.49, 0.5, 1);
+        style.Colors[ImGuiCol_FrameBgHovered] = style.Colors[ImGuiCol_TextDisabled];
+        style.Colors[ImGuiCol_ButtonActive] = style.Colors[ImGuiCol_TextDisabled];
+        style.Colors[ImGuiCol_ButtonHovered] = style.Colors[ImGuiCol_TextDisabled];
+        style.Colors[ImGuiCol_Border] = style.Colors[ImGuiCol_TextDisabled];
+        style.Colors[ImGuiCol_SliderGrab] = style.Colors[ImGuiCol_Text];
+        style.Colors[ImGuiCol_CheckMark] = style.Colors[ImGuiCol_Text];
+
         if (ImGui::Begin(DISTRHO_PLUGIN_NAME, NULL,
                          ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoDecoration |
                              ImGuiWindowFlags_NoScrollWithMouse)) {
