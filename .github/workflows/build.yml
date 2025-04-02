@@ -63,7 +63,7 @@ jobs:
         with:
           name: Misstrhortion-${{ steps.commit.outputs.short }}-x86_64-windows.exe
           path: build/Misstrhortion-*-win64.exe
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: Misstrhortion-${{ steps.commit.outputs.short }}-x86_64-windows.zip
           path: build/Misstrhortion-*-win64.zip
