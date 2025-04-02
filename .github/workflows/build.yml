@@ -25,7 +25,7 @@ jobs:
           mv bin/Misstrhortion out/bin/
           mv bin/* out/lib/
           tar -caf build.tar.gz out/*
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: Misstrhortion-${{ steps.commit.outputs.short }}-x86_64-linux.tar.gz
           path: build/build.tar.gz
@@ -59,7 +59,7 @@ jobs:
         run: |
           cpack -G NSIS
           cpack -G ZIP
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: Misstrhortion-${{ steps.commit.outputs.short }}-x86_64-windows.exe
           path: build/Misstrhortion-*-win64.exe
