@@ -2,6 +2,7 @@ name: Build plugins
 on:
   pull_request:
   push:
+  workflow_dispatch:
 jobs:
   linux:
     runs-on: ubuntu-latest
